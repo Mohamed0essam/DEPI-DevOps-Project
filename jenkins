@@ -1,0 +1,80 @@
+pipeline {
+    agent any
+
+    environment {
+        // AWS and Docker-related environment variables
+        AWS_REGION = 'us-east-1' // Change to your AWS region
+        ECR_REGISTRY = '123456789012.dkr.ecr.us-east-1.amazonaws.com' // Your AWS ECR registry URL
+        ECR_REPOSITORY = 'python-app-repo' // Your ECR repository name
+        IMAGE_TAG = "${env.BUILD_ID}" // Image tag with Jenkins build ID
+
+        // Kubernetes credentials (stored in Jenkins)
+        KUBE_CONFIG = credentials('kubeconfig') // Jenkins credential ID for kubeconfig
+        AWS_CREDENTIALS = credentials('aws-ecr-credentials') // Jenkins credential ID for AWS
+
+        // Security scanning tool
+        TRIVY_IMAGE = 'aquasec/trivy:latest' // Docker image for Trivy security scanning
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Mohamed0essam/DEPI-DevOps-Project.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    dockerImage = docker.build("${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}")
+                }
+            }
+        }
+
+        stage('Tag & Push Image to ECR') {
+            steps {
+                script {
+                    sh '''
+                    # Log in to AWS ECR
+                    aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+
+                    # Tag and push Docker image to ECR
+                    docker tag ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG} ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+                    docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+                    '''
+                }
+            }
+        }
+
+        stage('Security Scan') {
+            steps {
+                script {
+                    sh '''
+                    # Run Trivy scan on the Docker image
+                    docker run --rm ${TRIVY_IMAGE} image --severity HIGH,CRITICAL ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    sh '''
+                    # Use kubectl to update the Kubernetes deployment with the new image
+                    kubectl set image deployment/nginx-deployment nginx=${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG} --kubeconfig=$KUBE_CONFIG
+                    
+                    # Check the rollout status
+                    kubectl rollout status deployment/nginx-deployment --kubeconfig=$KUBE_CONFIG
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs() // Clean up workspace after the job finishes
+        }
+    }
+}
