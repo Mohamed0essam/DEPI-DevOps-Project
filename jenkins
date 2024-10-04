@@ -4,7 +4,7 @@ pipeline {
     environment {
         // AWS and Docker-related environment variables
         AWS_REGION = 'us-east-1' // Change to your AWS region
-        ECR_REGISTRY = '123456789012.dkr.ecr.us-east-1.amazonaws.com' // Your AWS ECR registry URL
+        ECR_REGISTRY = 'http://975050176026.dkr.ecr.us-east-1.amazonaws.com/my-ecr-repo' // Your AWS ECR registry URL
         ECR_REPOSITORY = 'my-ecr-repo' // Your ECR repository name
         IMAGE_TAG = "${env.BUILD_ID}" // Image tag with Jenkins build ID
 
