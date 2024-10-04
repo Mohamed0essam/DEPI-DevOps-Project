@@ -15,8 +15,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-               git branch: 'main', url: 'https://github.com/Mohamed0essam/DEPI-DevOps-Project.git'
-
+                git branch: 'main', url: 'https://github.com/Mohamed0essam/DEPI-DevOps-Project.git'
             }
         }
 
@@ -24,7 +23,8 @@ pipeline {
             steps {
                 script {
                     dir('app') { // Navigate to app directory
-                        dockerImage = docker.build("${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}")
+                        // Build the Docker image
+                        dockerImage = docker.build("${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}", ".")
                     }
                 }
             }
@@ -55,8 +55,6 @@ pipeline {
                 }
             }
         }
-
-   
     }
 
     post {
