@@ -1,2 +1,3 @@
 #!/bin/bash
-export ANSIBLE_PRIVATE_KEY_FILE="/home/ubuntu/.ssh/yat-devops-httpd-webserver.pem"
+export ANSIBLE_PRIVATE_KEY_FILE="/home/ubuntu/.ssh/my-key"
+export ANSIBLE_HOST_KEY_CHECKING=False
