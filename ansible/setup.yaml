@@ -1,13 +1,17 @@
----
-- hosts: jenkins-machine
+- hosts: jenkins-instance
   become: true
   gather_facts: true
   roles:
     - docker_setup
-    
-- hosts: kubernetes-machine
+    - jenkins_setup
+
+- hosts: k3s-instance
   become: true
   gather_facts: true
   roles:
-    - helm_setup
+    - helm_setup  
+
+- hosts: k3s-instance
+  gather_facts: true
+  roles:
     - nginx_setup
