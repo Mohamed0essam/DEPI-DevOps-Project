@@ -59,6 +59,13 @@ resource "aws_security_group" "allow_ssh_http" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -116,13 +123,13 @@ resource "aws_ecr_repository" "my_ecr_repo" {
   }
 }
 
-data "aws_ami" "amazon_linux_2" {
+data "aws_ami" "ubuntu22" {
   most_recent = true
   owners      = ["amazon"] 
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-*"]
   }
 
   filter {
@@ -142,7 +149,7 @@ data "aws_ami" "amazon_linux_2" {
 }
 
 resource "aws_instance" "kubernetes" {
-  ami           = data.aws_ami.amazon_linux_2.id 
+  ami           = data.aws_ami.ubuntu22.id 
   instance_type = "t2.micro"
   subnet_id     = aws_subnet.public_subnet.id
   vpc_security_group_ids = [aws_security_group.allow_ssh_http.id]
@@ -153,11 +160,11 @@ resource "aws_instance" "kubernetes" {
               #!/bin/bash
               curl -sfL https://get.k3s.io | sh -
               # Ensure kubeconfig permissions are set
-              mkdir -p /home/ec2-user/.kube
-              cp /etc/rancher/k3s/k3s.yaml /home/ec2-user/.kube/config
-              chown ec2-user:ec2-user /home/ec2-user/.kube/config
-              chmod 600 /home/ec2-user/.kube/config
-              echo "export KUBECONFIG=/home/ec2-user/.kube/config" >> /home/ec2-user/.bashrc    
+              mkdir -p /home/ubuntu/.kube
+              cp /etc/rancher/k3s/k3s.yaml /home/ubuntu/.kube/config
+              chown ubuntu:ubuntu /home/ubuntu/.kube/config
+              chmod 600 /home/ubuntu/.kube/config
+              echo "export KUBECONFIG=/home/ubuntu/.kube/config" >> /home/ubuntu/.bashrc    
               EOF
 
   tags = {
@@ -166,7 +173,7 @@ resource "aws_instance" "kubernetes" {
 }
 
 resource "aws_instance" "jenkins" {
-  ami           = data.aws_ami.amazon_linux_2.id 
+  ami           = data.aws_ami.ubuntu22.id 
   instance_type = "t2.micro"
   subnet_id     = aws_subnet.public_subnet.id
   vpc_security_group_ids = [aws_security_group.allow_ssh_http.id]
