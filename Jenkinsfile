@@ -10,9 +10,9 @@ pipeline {
         AWS_CREDENTIALS = credentials('aws-ecr-credentials') // Jenkins credential ID for AWS
 
         TRIVY_IMAGE = 'aquasec/trivy:latest' // Docker image for Trivy security scanning
-        KUBECONFIG_CREDENTIALS = credentials('kubeconfig') // Jenkins credential ID for Kubernetes kubeconfig
-        DEPLOYMENT_NAME = 'my-k8s-deployment' // Kubernetes deployment name
-        NAMESPACE = 'default' // Kubernetes namespace (adjust as necessary)
+        // KUBECONFIG_CREDENTIALS = credentials('kubeconfig') // Jenkins credential ID for Kubernetes kubeconfig
+        // DEPLOYMENT_NAME = 'my-k8s-deployment' // Kubernetes deployment name
+        // NAMESPACE = 'default' // Kubernetes namespace (adjust as necessary)
     }
 
     stages {
@@ -59,21 +59,21 @@ pipeline {
             }
         }
 
-        stage('Update Kubernetes Deployment') {
-            steps {
-                script {
-                    withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
-                        sh '''
-                        # Update Kubernetes deployment with the new Docker image
-                        kubectl set image deployment/${DEPLOYMENT_NAME} ${DEPLOYMENT_NAME}=${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG} --namespace=${NAMESPACE}
+        // stage('Update Kubernetes Deployment') {
+        //     steps {
+        //         script {
+        //             withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+        //                 sh '''
+        //                 # Update Kubernetes deployment with the new Docker image
+        //                 kubectl set image deployment/${DEPLOYMENT_NAME} ${DEPLOYMENT_NAME}=${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG} --namespace=${NAMESPACE}
 
-                        # Apply changes to the cluster
-                        kubectl rollout status deployment/${DEPLOYMENT_NAME} --namespace=${NAMESPACE}
-                        '''
-                    }
-                }
-            }
-        }
+        //                 # Apply changes to the cluster
+        //                 kubectl rollout status deployment/${DEPLOYMENT_NAME} --namespace=${NAMESPACE}
+        //                 '''
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     post {
