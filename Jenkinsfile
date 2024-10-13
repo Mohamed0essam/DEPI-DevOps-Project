@@ -30,16 +30,8 @@ pipeline {
             steps {
                 script {
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-ecr-credentials']]) {
-                        // Ensure AWS CLI is installed in the Jenkins environment
                         sh '''
-                        echo "Installing AWS CLI..."
-                        apt-get update
-                        apt-get install -y awscli
-                        
-                        echo "Logging in to ECR..."
                         aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
-                        
-                        echo "Tagging and pushing Docker image..."
                         docker tag ${ECR_REPOSITORY}:${IMAGE_TAG} $ECR_REGISTRY/${ECR_REPOSITORY}:${IMAGE_TAG}
                         docker push $ECR_REGISTRY/${ECR_REPOSITORY}:${IMAGE_TAG}
                         '''
@@ -52,7 +44,6 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    echo "Running security scan with Trivy..."
                     docker run --rm ${TRIVY_IMAGE} image --severity HIGH,CRITICAL $ECR_REGISTRY/${ECR_REPOSITORY}:${IMAGE_TAG}
                     '''
                 }
