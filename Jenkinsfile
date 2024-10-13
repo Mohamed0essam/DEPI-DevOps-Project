@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         AWS_REGION = 'us-east-1'
-        ECR_REGISTRY = '975050176026.dkr.ecr.us-east-1.amazonaws.com/my-ecr-repo'
+        ECR_REGISTRY = 'http://975050176026.dkr.ecr.us-east-1.amazonaws.com/my-ecr-repo'
         ECR_REPOSITORY = 'my-ecr-repo'
         IMAGE_TAG = "${env.BUILD_ID}"
         TRIVY_IMAGE = 'aquasec/trivy:latest'
