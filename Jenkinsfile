@@ -6,14 +6,13 @@ pipeline {
         ECR_REGISTRY = '975050176026.dkr.ecr.us-east-1.amazonaws.com'
         ECR_REPOSITORY = 'my-ecr-repo'
         IMAGE_TAG = "${env.BUILD_ID}"
-        AWS_CREDENTIALS = credentials('aws-ecr-credentials')
         TRIVY_IMAGE = 'aquasec/trivy:latest'
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/Mohamed0essam/DEPI-DevOps-Project.git/app'
+                git branch: 'main', url: 'https://github.com/Mohamed0essam/DEPI-DevOps-Project.git'
             }
         }
 
@@ -21,7 +20,7 @@ pipeline {
             steps {
                 script {
                     dir('app') {
-                        dockerImage = docker.build("${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}")
+                        dockerImage = docker.build("${ECR_REPOSITORY}:${IMAGE_TAG}")
                     }
                 }
             }
@@ -30,7 +29,7 @@ pipeline {
         stage('Tag & Push Image to ECR') {
             steps {
                 script {
-                    withCredentials([AWS_CREDENTIALS]) {
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-ecr-credentials']]) {
                         sh '''
                         aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
                         docker tag ${ECR_REPOSITORY}:${IMAGE_TAG} $ECR_REGISTRY/${ECR_REPOSITORY}:${IMAGE_TAG}
