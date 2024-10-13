@@ -40,16 +40,15 @@
     repo: deb https://download.docker.com/linux/ubuntu focal stable
     state: present
 
-- name: Update apt and install docker packages
+- name: Update apt and install Docker packages
   apt:
     name: "{{ item }}"
     state: latest
-    update_cache: true
+    update_cache: yes
   loop:
     - docker.io
     - docker-ce
     - docker-ce-cli
-    - podman-docker
     - containerd.io
     - docker-buildx-plugin
     - docker-compose-plugin
