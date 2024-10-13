@@ -1,5 +1,4 @@
 import socket
-import time
 
 def resolve_nginx():
     try:
@@ -11,7 +10,5 @@ def resolve_nginx():
         print("Error resolving the DNS")
 
 if __name__ == "__main__":
-    while True:
+    while(True):
         resolve_nginx()
-        time.sleep(5)  # Resolve every 5 seconds
-
