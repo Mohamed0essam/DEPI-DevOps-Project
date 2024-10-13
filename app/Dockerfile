@@ -1,13 +1,9 @@
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 WORKDIR /app
-COPY . .
 
-# Upgrade pip
-RUN pip install --upgrade pip
+# Copy the current directory contents (including main.py) to /app in the container
+COPY main.py .
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-ENV PYTHONUNBUFFERED=1
+# Define the command to run the script
 CMD ["python", "main.py"]
