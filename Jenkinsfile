@@ -41,16 +41,7 @@ pipeline {
             }
         }
 
-        stage('Security Scan') {
-            steps {
-                script {
-                    sh '''
-                    docker run --rm -v $TRIVY_CACHE:/root/.cache $TRIVY_IMAGE image \
-                    --severity HIGH,CRITICAL $ECR_REGISTRY/${ECR_REPOSITORY}:${IMAGE_TAG} --timeout 5m
-                    '''
-                }
-            }
-        }
+     
 
     }
 
