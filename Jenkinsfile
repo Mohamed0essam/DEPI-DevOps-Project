@@ -45,18 +45,21 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    withCredentials([file(credentialsId: 'kubeconfig-credentials-id', variable: 'KUBECONFIG')]) {
-                        def imageUri = "${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
+                    // Define the latest image URI
+                    def imageUri = "${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
 
+                    // SSH into the Kubernetes EC2 instance and update the deployment
+                    sshagent(['ssh_cred']) {
                         sh '''
-                        kubectl apply -f /home/ubuntu/DEPI-DevOps-Project/Kubernates/python-deployment.yaml -n ${KUBE_NAMESPACE} --insecure-skip-tls-verify
-                        kubectl set image deployment/my-deployment my-container=${imageUri} -n ${KUBE_NAMESPACE} --insecure-skip-tls-verify
-                        kubectl rollout status deployment/my-deployment -n ${KUBE_NAMESPACE} --insecure-skip-tls-verify
+                        ssh ubuntu@52.201.230.33 << EOF
+                        kubectl set image deployment/my-deployment my-container=${imageUri} --record
+                        kubectl rollout status deployment/my-deployment
+                        EOF
                         '''
                     }
                 }
             }
-        }
+        }    
     }
 
     post {
