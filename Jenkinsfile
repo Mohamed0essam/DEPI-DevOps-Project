@@ -43,23 +43,16 @@ pipeline {
         }
 
         stage('Deploy to Kubernetes') {
-            steps {
-                script {
-                    // Define the latest image URI
-                    def imageUri = "${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
+    steps {
+        sshagent(['ubuntu']) {  // Replace 'ubuntu' with the correct credentials ID in Jenkins
+            sh '''
+            # Your SSH commands for deployment
+            kubectl apply -f python-deployment.yaml
+            '''
+                   }
+           }
+        }
 
-                    // SSH into the Kubernetes EC2 instance and update the deployment
-                    sshagent(['ssh_cred']) {
-                        sh '''
-                        ssh ubuntu@52.201.230.33 << EOF
-                        kubectl set image deployment/my-deployment my-container=${imageUri} --record
-                        kubectl rollout status deployment/my-deployment
-                        EOF
-                        '''
-                    }
-                }
-            }
-        }    
     }
 
     post {
