@@ -44,7 +44,7 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
     steps {
-        sshagent(['ubuntu']) {  // Replace 'ubuntu' with the correct credentials ID in Jenkins
+        sshagent(['ssh_cred']) {  
             sh '''
             # Your SSH commands for deployment
             kubectl apply -f python-deployment.yaml
