@@ -48,6 +48,8 @@ pipeline {
 
                 sh '''
                 kubectl set image deployment/my-deployment my-container=${imageUri} --insecure-skip-tls-verify
+                kubectl apply -f /home/mohamed/DEPI-DevOps-Project/Kubernates/nginx-service.yaml
+                kubectl apply -f /home/mohamed/DEPI-DevOps-Project/Kubernates/python-deployment.yaml
                 kubectl rollout status deployment/my-deployment --insecure-skip-tls-verify
                 '''
             }
