@@ -42,13 +42,23 @@ pipeline {
             }
         }
 
-    stage('Deploy to Kubernetes') {
+ stage('Deploy Kubernetes') {
     steps {
-        sshagent(['ssh_cred']) {
-            sh 'ssh ubuntu@52.201.230.33 kubectl get nodes'
+        withCredentials([file(credentialsId: 'secret_key', variable: 'Secretfile')]) {
+            sh '''
+                mkdir -p ~/.ssh
+                ssh-keyscan -H 52.201.230.33 >> ~/.ssh/known_hosts
+
+                ssh -i "${Secretfile}" ubuntu@52.201.230.33 << EOF
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 975050176026.dkr.ecr.us-east-1.amazonaws.com
+                    kubectl set image deployment/python-deployment python-container=975050176026.dkr.ecr.us-east-1.amazonaws.com/my-ecr-repo:${IMAGE_TAG} -n your-namespace --record
+                    kubectl rollout restart deployment/python-deployment -n your-namespace
+                EOF
+            '''
         }
     }
 }
+
 
     }
 
