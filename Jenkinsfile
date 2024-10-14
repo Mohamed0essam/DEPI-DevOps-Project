@@ -50,7 +50,7 @@ pipeline {
 
                         sh '''
                         kubectl set image deployment/my-deployment my-container=${imageUri} --insecure-skip-tls-verify
-                        kubectl rollout status deployment/my-deployment
+                        kubectl rollout status deployment/my-deployment --insecure-skip-tls-verify
                         '''
                     }
                 }
