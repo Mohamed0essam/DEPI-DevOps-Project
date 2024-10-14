@@ -41,19 +41,20 @@ pipeline {
             }
         }
          stage('Deploy to Kubernetes') {
-            steps {
-                script {
-                    // Define the latest image URI
-                    def imageUri = "${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
+    steps {
+        script {
+            withCredentials([file(credentialsId: 'kubeconfig-credentials-id', variable: 'KUBECONFIG')]) {
+                def imageUri = "${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
 
-                        sh '''
-                        kubectl set image deployment/my-deployment my-container=${imageUri}  --insecure-skip-tls-verify
-                        kubectl rollout status deployment/my-deployment  --insecure-skip-tls-verify
-                        '''
-                    
-                }
+                sh '''
+                kubectl set image deployment/my-deployment my-container=${imageUri} --insecure-skip-tls-verify
+                kubectl rollout status deployment/my-deployment --insecure-skip-tls-verify
+                '''
             }
         }
+    }
+}
+
 
      
 
