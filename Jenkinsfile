@@ -42,16 +42,13 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+    stage('Deploy to Kubernetes') {
     steps {
-        sshagent(['ssh_cred']) {  
-            sh '''
-            # Your SSH commands for deployment
-            kubectl apply -f python-deployment.yaml
-            '''
-                   }
-           }
+        sshagent(['ssh_cred']) {
+            sh 'ssh ubuntu@52.201.230.33 kubectl get nodes'
         }
+    }
+}
 
     }
 
