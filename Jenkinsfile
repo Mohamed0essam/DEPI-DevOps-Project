@@ -42,17 +42,17 @@ pipeline {
         }
 
         stage('Security Scan') {
-            steps {
+          steps {
                 script {
-                    // Ensure Trivy DB is updated and cached
-                    sh '''
-                    docker run --rm -v $TRIVY_CACHE:/root/.cache ${TRIVY_IMAGE} --download-db-only
-                    docker run --rm -v $TRIVY_CACHE:/root/.cache ${TRIVY_IMAGE} image \
-                    --severity HIGH,CRITICAL $ECR_REGISTRY/${ECR_REPOSITORY}:${IMAGE_TAG} --timeout 5m
-                    '''
+            // Ensure Trivy DB is updated first
+            sh '''
+            docker run --rm -v /root/.cache:/root/.cache aquasec/trivy:latest image \
+            --update --severity HIGH,CRITICAL $ECR_REGISTRY/${ECR_REPOSITORY}:${IMAGE_TAG} --timeout 5m
+            '''
                 }
             }
         }
+
     }
 
     post {
