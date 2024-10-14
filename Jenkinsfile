@@ -8,6 +8,7 @@ pipeline {
         IMAGE_TAG = "${BUILD_ID}"
         TRIVY_IMAGE = 'aquasec/trivy:latest'
         TRIVY_CACHE = '/root/.cache'
+        KUBE_NAMESPACE = 'your-namespace'  // Change this to your actual namespace
     }
 
     stages {
@@ -40,26 +41,22 @@ pipeline {
                 }
             }
         }
-         stage('Deploy to Kubernetes') {
-    steps {
-        script {
-            withCredentials([file(credentialsId: 'kubeconfig-credentials-id', variable: 'KUBECONFIG')]) {
-                def imageUri = "${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
 
-                sh '''
-                kubectl set image deployment/my-deployment my-container=${imageUri} --insecure-skip-tls-verify
-                kubectl apply -f /home/mohamed/DEPI-DevOps-Project/Kubernates/nginx-service.yaml
-                kubectl apply -f /home/mohamed/DEPI-DevOps-Project/Kubernates/python-deployment.yaml
-                kubectl rollout status deployment/my-deployment --insecure-skip-tls-verify
-                '''
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'kubeconfig-credentials-id', variable: 'KUBECONFIG')]) {
+                        def imageUri = "${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
+
+                        sh '''
+                        kubectl apply -f /home/mohamed/DEPI-DevOps-Project/Kubernates/python-deployment.yaml -n ${KUBE_NAMESPACE}
+                        kubectl set image deployment/my-deployment my-container=${imageUri} -n ${KUBE_NAMESPACE} --insecure-skip-tls-verify
+                        kubectl rollout status deployment/my-deployment -n ${KUBE_NAMESPACE} --insecure-skip-tls-verify
+                        '''
+                    }
+                }
             }
         }
-    }
-}
-
-
-     
-
     }
 
     post {
