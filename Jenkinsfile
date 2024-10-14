@@ -32,9 +32,8 @@ pipeline {
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-ecr-credentials']]) {
                         sh '''
                         aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
-                        docker tag ${ECR_REPOSITORY}:${IMAGE_TAG} $ECR_REGISTRY:${IMAGE_TAG}
-                        docker push $ECR_REGISTRY:${IMAGE_TAG}
-
+                        docker tag ${ECR_REPOSITORY}:${IMAGE_TAG} $ECR_REGISTRY/${ECR_REPOSITORY}:${IMAGE_TAG}
+                        docker push $ECR_REGISTRY/${ECR_REPOSITORY}:${IMAGE_TAG}
                         '''
                     }
                 }
@@ -50,25 +49,6 @@ pipeline {
                 }
             }
         }
-
-        // stage('Deploy to Kubernetes') {
-        //     steps {
-        //         script {
-        //             // Define the latest image URI
-        //             def imageUri = "${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
-
-        // //             // SSH into the Kubernetes EC2 instance and update the deployment
-        //             sshagent(['kub_ec2_ssh']) {
-        //                 sh '''
-        //                 ssh ssh ubuntu@3.91.16.154 << EOF
-        //                 kubectl set image deployment/my-deployment my-container=${imageUri} --record
-        //                 kubectl rollout status deployment/my-deployment
-        //                 EOF
-        //                 '''
-        //             }
-        //         }
-        //     }
-        // }
     }
 
     post {
