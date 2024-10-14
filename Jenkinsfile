@@ -6,9 +6,7 @@ pipeline {
         ECR_REGISTRY = '975050176026.dkr.ecr.us-east-1.amazonaws.com'
         ECR_REPOSITORY = 'my-ecr-repo'
         IMAGE_TAG = "${BUILD_ID}"
-        TRIVY_IMAGE = 'aquasec/trivy:latest'
-        TRIVY_CACHE = '/root/.cache'
-        KUBE_NAMESPACE = 'your-namespace'  // Change this to your actual namespace
+        KUBE_NAMESPACE = 'Default'  
     }
 
     stages {
@@ -42,24 +40,26 @@ pipeline {
             }
         }
 
- stage('Deploy Kubernetes') {
-    steps {
-        withCredentials([file(credentialsId: 'secret_key', variable: 'Secretfile')]) {
-            sh '''
-                mkdir -p ~/.ssh
-                ssh-keyscan -H 34.229.163.123 >> ~/.ssh/known_hosts
+        stage('Deploy to Kubernetes') {
+            steps {
+                withCredentials([file(credentialsId: 'secret_key', variable: 'Secretfile')]) {
+                    script {
+                        // Print the output of ssh-keyscan for better debugging
+                        sh '''
+                            mkdir -p ~/.ssh
+                            ssh-keyscan -H 34.229.163.123 >> ~/.ssh/known_hosts
+                            cat ~/.ssh/known_hosts  # Log known hosts for debugging
 
-                ssh -i "${Secretfile}" ubuntu@34.229.163.123 << EOF
-                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 975050176026.dkr.ecr.us-east-1.amazonaws.com
-                    kubectl set image deployment/python-deployment python-container=975050176026.dkr.ecr.us-east-1.amazonaws.com/my-ecr-repo:${IMAGE_TAG} -n your-namespace --record
-                    kubectl rollout restart deployment/python-deployment -n your-namespace
-                EOF
-            '''
+                            ssh -o StrictHostKeyChecking=no -i "${Secretfile}" ubuntu@34.229.163.123 << EOF
+                                aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 975050176026.dkr.ecr.us-east-1.amazonaws.com
+                                kubectl set image deployment/python-deployment python-container=975050176026.dkr.ecr.us-east-1.amazonaws.com/my-ecr-repo:${IMAGE_TAG} -n ${KUBE_NAMESPACE} --record
+                                kubectl rollout restart deployment/python-deployment -n ${KUBE_NAMESPACE}
+                            EOF
+                        '''
+                    }
+                }
+            }
         }
-    }
-}
-
-
     }
 
     post {
