@@ -7,6 +7,7 @@ pipeline {
         ECR_REPOSITORY = 'my-ecr-repo'
         IMAGE_TAG = "${env.BUILD_ID}"
         TRIVY_IMAGE = 'aquasec/trivy:latest'
+        TRIVY_CACHE = '/root/.cache'
     }
 
     stages {
@@ -43,8 +44,11 @@ pipeline {
         stage('Security Scan') {
             steps {
                 script {
+                    // Ensure Trivy DB is updated and cached
                     sh '''
-                    docker run --rm ${TRIVY_IMAGE} image --severity HIGH,CRITICAL $ECR_REGISTRY/${ECR_REPOSITORY}:${IMAGE_TAG}
+                    docker run --rm -v $TRIVY_CACHE:/root/.cache ${TRIVY_IMAGE} --download-db-only
+                    docker run --rm -v $TRIVY_CACHE:/root/.cache ${TRIVY_IMAGE} image \
+                    --severity HIGH,CRITICAL $ECR_REGISTRY/${ECR_REPOSITORY}:${IMAGE_TAG} --timeout 5m
                     '''
                 }
             }
