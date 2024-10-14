@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         AWS_REGION = 'us-east-1'
-        ECR_REGISTRY = '975050176026.dkr.ecr.us-east-1.amazonaws.com/my-ecr-repo'
+        ECR_REGISTRY = '975050176026.dkr.ecr.us-east-1.amazonaws.com'
         ECR_REPOSITORY = 'my-ecr-repo'
         IMAGE_TAG = "${env.BUILD_ID}"
         TRIVY_IMAGE = 'aquasec/trivy:latest'
@@ -32,9 +32,8 @@ pipeline {
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-ecr-credentials']]) {
                         sh '''
                         aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
-                        docker tag my-ecr-repo:${IMAGE_TAG} $ECR_REGISTRY/${ECR_REPOSITORY}:${IMAGE_TAG}
+                        docker tag ${ECR_REPOSITORY}:${IMAGE_TAG} $ECR_REGISTRY/${ECR_REPOSITORY}:${IMAGE_TAG}
                         docker push $ECR_REGISTRY/${ECR_REPOSITORY}:${IMAGE_TAG}
-
                         '''
                     }
                 }
