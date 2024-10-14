@@ -5,7 +5,7 @@ pipeline {
         AWS_REGION = 'us-east-1'
         ECR_REGISTRY = '975050176026.dkr.ecr.us-east-1.amazonaws.com'
         ECR_REPOSITORY = 'my-ecr-repo'
-        IMAGE_TAG = "${env.BUILD_ID}"
+        IMAGE_TAG = "${BUILD_ID}"
         TRIVY_IMAGE = 'aquasec/trivy:latest'
         TRIVY_CACHE = '/root/.cache'
     }
@@ -42,13 +42,12 @@ pipeline {
         }
 
         stage('Security Scan') {
-          steps {
+            steps {
                 script {
-            // Ensure Trivy DB is updated first
-            sh '''
-            docker run --rm -v /root/.cache:/root/.cache aquasec/trivy:latest image \
-            --update --severity HIGH,CRITICAL $ECR_REGISTRY/${ECR_REPOSITORY}:${IMAGE_TAG} --timeout 5m
-            '''
+                    sh '''
+                    docker run --rm -v $TRIVY_CACHE:/root/.cache $TRIVY_IMAGE image \
+                    --severity HIGH,CRITICAL $ECR_REGISTRY/${ECR_REPOSITORY}:${IMAGE_TAG} --timeout 5m
+                    '''
                 }
             }
         }
