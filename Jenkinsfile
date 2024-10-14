@@ -49,7 +49,7 @@ pipeline {
                         def imageUri = "${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
 
                         sh '''
-                        kubectl apply -f /home/ubuntu/DEPI-DevOps-Project/Kubernates/python-deployment.yaml -n ${KUBE_NAMESPACE}
+                       sudo kubectl apply -f /home/ubuntu/DEPI-DevOps-Project/Kubernates/python-deployment.yaml -n ${KUBE_NAMESPACE}
                         kubectl set image deployment/my-deployment my-container=${imageUri} -n ${KUBE_NAMESPACE} --insecure-skip-tls-verify
                         kubectl rollout status deployment/my-deployment -n ${KUBE_NAMESPACE} --insecure-skip-tls-verify
                         '''
